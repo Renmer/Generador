@@ -10,31 +10,48 @@
     <form action="" id="formulario" method="POST">
         <label for="">Nombre del servidor</label>
         <br>
-        <input type="text" name="server">
+        <input class="inputs" type="text" name="server">
         <br>
-        <label for="">Base de datos</label>
+        <label for="">Nombre de la base de datos</label>
         <br>
-        <input type="text" name="db">
+        <input class="inputs" type="text" name="db">
         <br>
         <label for="">Usuario</label>
         <br>
-        <input type="text" name="user">
+        <input class="inputs" type="text" name="user">
         <br>
         <label for="">Contraseña</label>
         <br>
-        <input type="password" name="password">
+        <input class="inputs" type="password" name="password">
         <br>
+        <label for="">Tipo de base de datos</label>
+        <br>
+        <select name="tipo" id="tipo">
+            <option value="sqlserver">SQLServer</option>
+            <option value="mysql">MySQL</option>
+        </select>
         <br>
         <button type="submit">Enviar</button>
     </form>
 </body>
 </html>
 <style>
+
+    .inputs{
+        margin: 5px;
+        width: 200px;
+    }
+    
     label{
         padding: 5px;
         margin: 10px;
+        width: 200px;
     }
-    input,button{
+    select{
+        margin: 5px;
+        width: 200px;
+    }
+    button{
         margin: 5px;
     }
 </style>
