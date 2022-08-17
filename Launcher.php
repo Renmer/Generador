@@ -63,30 +63,28 @@
 </style>
 
 <?php
+    session_start();
+
     class GenerarDatos{
         
-        public function __construct($server,$db,$user,$password,$tipoDeBD){
-            $conexion = $this->seleccionaTipoBD($server,$db,$user,$password,$tipoDeBD);
+        public function __construct($server,$db,$user,$password){
+            $conexion = $this->seleccionaTipoBD($server,$db,$user,$password);
             echo '<script>document.getElementById("formulario").style.display = "none"</script>';
-            $this->ejecutaConsulta($conexion);
-            $tsql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES;";
-            $dato = sqlsrv_query($conn, $tsql);
-            $this->generaTabla($dato,$server,$db,$user,$password);
+            $dato = $this->ejecutaConsulta($conexion,$db);
+            $this->generaTabla($dato);
         }
-        function generaTabla($dato,$server,$db,$user,$password){
+        function generaTabla($dato){
             echo '
-                <form action="CreaMVC.php?server='.urlencode($server).'&db='.urlencode($db).
-                    '&user='.urlencode($user).'&password='.urlencode($password).'" method="post">
+                <form action="CreaMVC.php" method="POST">
 
                     <table id="tabla" border=1 cellspacing=0 cellpadding=2 bordercolor="666633">
                         <tr>
                             <th>Seleccion</th>
                             <th>Tabla</th>
                         </tr>';
-                        while($row = sqlsrv_fetch_array($dato, SQLSRV_FETCH_ASSOC))
-                        {
-                            echo "<tr><td>".'<input type="checkbox" name="select[]" value="'.$row['TABLE_NAME'].'">'."</td>";
-                            echo "<td>".$row['TABLE_NAME']."</td></tr>";
+                        foreach($dato as $tabla){
+                            echo "<tr><td>".'<input type="checkbox" name="select[]" value="'.$tabla.'">'."</td>";
+                            echo "<td>".$tabla."</td></tr>";
                         }
             echo '
                     </table>
@@ -101,39 +99,72 @@
                     <button type="submit"/>Generar</button>
                 </form>';
         }
-        function seleccionaTipoBD($server,$db,$user,$password,$tipoDeBD){
-            switch ($tipoDeBD) {
+        function seleccionaTipoBD($server,$db,$user,$password){
+            switch ($_SESSION['tipodb']) {
                 case 'sqlserver':
                     $connectionInfo =  array("Database"=>$db,"UID"=>$user,"PWD"=>$password);
                     if(sqlsrv_connect($server,$connectionInfo)){
-                        $conn = sqlsrv_connect($server,$connectionInfo);
+                        $conn= sqlsrv_connect($server,$connectionInfo);
                     }
                      else{
-                        echo 'Error en las credenciales';
+                        echo 'Error en las credenciales de sqlserver';
                         die();
                     }
                     return $conn;
 
                 case 'mysql':
-                    echo "i equals 1";
+                    if(new PDO("mysql:host=$server;dbname=$db", $user,$password)){
+                        $conn =new PDO("mysql:host=$server;dbname=$db", $user,$password);
+                    }
+                    else{
+                        echo 'Error en las credenciales de mysql';
+                        die();
+                    }
+                    return $conn;
 
                 default:
                    echo "El tipo de base de datos no se encuentra";
             }
         }
-        function ejecutaConsulta(){
+        function ejecutaConsulta($conexion,$db){
+            switch ($_SESSION['tipodb']) {
+                case 'sqlserver':
+                    $tsql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES;";
+                    $dato = sqlsrv_query($conexion, $tsql);
+                    $dato_en_arreglo = array();
+                    while($row = sqlsrv_fetch_array($dato, SQLSRV_FETCH_ASSOC))
+                    {
+                        array_push($dato_en_arreglo,$row['TABLE_NAME']);
+                    }
+                    return $dato_en_arreglo;
+
+                case 'mysql':
+                    $dato = $conexion->query("SELECT TABLE_NAME AS nombre FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '" . $db . "'")
+                    ->fetchAll(PDO::FETCH_OBJ);
+                    $dato_en_arreglo = array();
+                    foreach($dato as $tabla){
+                        array_push($dato_en_arreglo,$tabla->nombre);
+                    }
+                    return $dato_en_arreglo;
+                default:
+                   echo "El tipo de base de datos no es correcto";
+            }
 
         }
 
     }
-
 if ($_POST) {
     if(empty($_POST['server']) or empty($_POST['db'])){
         echo 'Debe añadir un servidor y una base de datos<br>';
         die();
     }
     else{
-        $datos = new GenerarDatos($_POST['server'],$_POST['db'],$_POST['user'],$_POST['password'],$_POST['tipodb']);
+        $_SESSION['db'] = $_POST['db'];
+        $_SESSION['tipodb'] = $_POST['tipodb'];
+        $_SESSION['server'] = $_POST['server'];
+        $_SESSION['user'] = $_POST['user'];
+        $_SESSION['password'] = $_POST['password'];
+        $datos = new GenerarDatos($_POST['server'],$_POST['db'],$_POST['user'],$_POST['password']);
     }
 }
 ?>
