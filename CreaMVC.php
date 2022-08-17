@@ -1,7 +1,7 @@
 <?php
-$creacion = new CreaModelo($_GET['server'],$_GET['db'],$_GET['user'],$_GET['password'],$_POST['select']);
+$helper = new CreaHelper($_GET['server'],$_GET['db'],$_GET['user'],$_GET['password'],$_POST['select']);
 
-class CreaModelo{
+class CreaHelper{
 
     public function __construct($servidor, $db, $user, $password , $tablasNecesarias){
         $connectionInfo =  array("Database"=>$db,"UID"=>$user,"PWD"=>$password);
