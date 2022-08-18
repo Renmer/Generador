@@ -88,7 +88,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Helpers\\'.$nombreModelo.'Helper;
 
-class '.$nombreModelo.' extends Model
+class '.$nombreModelo."Model".' extends Model
 {
     use HasFactory;
     use '.$nombreModelo.'Helper;

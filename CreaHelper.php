@@ -57,7 +57,7 @@ class CreaHelper{
 
 namespace App\Models\Helpers;
 
-class '.$nombreModelo.'Helper'.'
+trait '.$nombreModelo.'Helper'.'
 {
     '.$codigoVariables.'
     /*-->[Metodos set para cada una de las variables definidas]<--*/

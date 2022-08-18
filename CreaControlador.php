@@ -37,17 +37,19 @@ class CreaControlador{
     private function creaControlador($nombreTabla){
         $nombreControlador = $nombreTabla;
         $columnas = $this->obtieneColumnas($nombreTabla);
-        $llavesPrimarias = $this->obtieneLlavesPrimarias($nombreTabla);
+        //$llavesPrimarias = $this->obtieneLlavesPrimarias($nombreTabla);
 
-        
+        $codigo_asignacion_guardado ="";
+        foreach($columnas as $columna){
+            $codigo_asignacion_guardado .= sprintf('$_'.$nombreTabla.'[$_counter][\''.$columna.'\'] = $obj->get_'.$columna.'();
+            ');
+        }
         
         $codigoControlador = "";
         $codigoControlador .= sprintf('<?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-//use App\Models\Url;
 use App\Models\\'.$nombreTabla."Model".';
-//use App\Models\Contenido;
 
 class '.$nombreControlador."Controller".' extends Controller
 {
@@ -60,6 +62,27 @@ class '.$nombreControlador."Controller".' extends Controller
 
         $_'.strtolower($nombreControlador).' = array();
         $_counter = 0;
+        $values = array();
+        
+        if( count($llaveprimaria) > 0 )
+        {
+            foreach($llaveprimaria as $obj)
+            {
+                '.$codigo_asignacion_guardado.'
+                $_counter++;
+            }
+        }
+        else
+        {
+            $_llaveprimaria = \'\';
+        }
+
+        
+        $values[\'tabla\'] = $_llaveprimaria;
+        $values[\'nuevo\'] = \'basico\';
+
+        return view(\'pages.menu.table\', $values);
+        
     }
 }
 ?>');
