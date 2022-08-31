@@ -37,8 +37,8 @@ class CreaControlador{
     private function creaControlador($nombreTabla){
         $nombreControlador = $nombreTabla;
         $columnas = $this->obtieneColumnas($nombreTabla);
-        //$llavesPrimarias = $this->obtieneLlavesPrimarias($nombreTabla);
-
+        $llavesPrimarias = $this->obtieneLlavesPrimarias($nombreTabla);
+        
         $codigo_asignacion_guardado ="";
         foreach($columnas as $columna){
             $codigo_asignacion_guardado .= sprintf('$_'.$nombreTabla.'[$_counter][\''.$columna.'\'] = $obj->get_'.$columna.'();
@@ -74,15 +74,69 @@ class '.$nombreControlador."Controller".' extends Controller
         }
         else
         {
-            $_llaveprimaria = \'\';
+            $_'.$nombreTabla.' = \'\';
         }
 
         
-        $values[\'tabla\'] = $_llaveprimaria;
+        $values[\'tabla\'] = $_'.$nombreTabla.';
         $values[\'nuevo\'] = \'basico\';
 
         return view(\'pages.menu.table\', $values);
+    }
+
+    public function nuevo($menu_id = 0//llaves primarias)
+    {
+        $values = array();
+
+        $values[\'menu_id\'] = \'\';//arreglo
         
+
+        if( $menu_id != 0)
+        {
+            $catalogo_'.$nombreTabla.' = new '.$nombreTabla.'();
+            $'.$nombreTabla.' = $catalogo_'.$nombreTabla.'->buscar_'.$nombreTabla.'_id($menu_id//llave primaria);
+
+            foreach($'.$nombreTabla.' as $objeto)
+            {
+                $values[\'menu_id\'] = $obj->get_menu_id();//arreglo
+            }
+        }
+
+
+        $catalogo_'.$nombreTabla.' = new '.$nombreTabla.'();
+        $'.$nombreTabla.' = $catalogo_'.$nombreTabla.'->buscar_'.$nombreTabla.'_id();
+
+        $_'.$nombreTabla.' = array();
+
+        $_counter = 1;
+        
+        $values[\'menus\'] = $_menus;
+
+        $cat_url = new Url();
+
+        $url = $cat_url->buscar_url();
+        $_url = array();
+        $_counter = 0;
+
+        if( count($url) > 0 )
+        {
+            $_url[$_counter][0] = \'\';
+            $_url[$_counter][1] = \'Sin URL\';
+
+            $_counter++;
+
+            foreach($url as $obj)
+            {
+                $_url[$_counter][0] = $obj->get_url_id();
+                $_url[$_counter][1] = $obj->get_url_nombre();
+
+                $_counter++;
+            }
+        }
+
+        $values[\'contenido\'] = $_contenido;
+
+        return view(\'pages.menu.new\', $values);
     }
 }
 ?>');
@@ -113,12 +167,11 @@ class '.$nombreControlador."Controller".' extends Controller
         $resultadoLlaves = $this->creaConsulta($queryLlaves);
         return $resultadoLlaves;
     }
-
     /*
         ->Funcion que crea la conexion a la base de datos
     */
-    private function creaConexion(){
-
+    private function creaConexion()
+    {
         switch ($_SESSION['tipodb']) {
             case 'sqlserver':
                 $connectionInfo =  array("Database"=>$_SESSION['db'],"UID"=>$_SESSION['user'],"PWD"=>$_SESSION['password'],"ConnectionPooling"=>true);

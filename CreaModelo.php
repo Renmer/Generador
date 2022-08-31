@@ -6,7 +6,6 @@ class CreaModelo{
         $this->conexion = $conexion;
         $this->directorioModelos();
         $this->descartaTablas($tablasNecesarias);
-        echo '<a href="Launcher.php">Volver al inicio</a>';
     }
     /*Funcion que crea el directorio donde se guardaran los archivos que se generen
         Si existe el directorio y contiene archivos estos se eliminaran y se creara nuevamente el directorio*/
