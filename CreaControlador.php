@@ -34,14 +34,39 @@ class CreaControlador{
     }
     /*Este metodo se encarga de hacer consulta de las columnas de la tabla y las llaves primarias para asi poder concatenar los
         datos y asi formar el controlador en base a la tabla */
-    private function creaControlador($nombreTabla){
+    private function creaControlador($nombreTabla)
+    {
         $nombreControlador = $nombreTabla;
         $columnas = $this->obtieneColumnas($nombreTabla);
         $llavesPrimarias = $this->obtieneLlavesPrimarias($nombreTabla);
-        
+        $request_llaveprimaria= "";
+        if(count($llavesPrimarias)>1)
+        {
+            foreach($llavesPrimarias as $row){
+                $request_llaveprimaria .= sprintf('$'.sprintf($row).' = $request->input(\''.$row.'\');
+            ');
+            }
+        }
+        else
+        {
+            if(count($llavesPrimarias)==1)
+            {
+                $request_llaveprimaria = sprintf('$'.sprintf($llavesPrimarias[0]).' = $request->input(\''.$llavesPrimarias[0].'\');
+            ');
+            }
+            else
+            {
+                $request_llaveprimaria = sprintf('$'.sprintf($columnas[0]).' = $request->input(\''.$columnas[0].'\');
+            ');
+            }
+        }
+        $columnas_sin_llaves = \array_diff($columnas ,$llavesPrimarias);
+        foreach($columnas_sin_llaves as $campo){
+            
+        }
         $codigo_asignacion_guardado ="";
         foreach($columnas as $columna){
-            $codigo_asignacion_guardado .= sprintf('$_'.$nombreTabla.'[$_counter][\''.$columna.'\'] = $obj->get_'.$columna.'();
+            $codigo_asignacion_guardado .= sprintf('$_'.$nombreTabla.'[$_counter][\''.strtolower($columna).'\'] = $objeto->get_'.strtolower($columna).'();
             ');
         }
         
@@ -62,11 +87,10 @@ class '.$nombreControlador."Controller".' extends Controller
 
         $_'.strtolower($nombreControlador).' = array();
         $_counter = 0;
-        $values = array();
         
-        if( count($llaveprimaria) > 0 )
+        if( count('.$nombreControlador.') > 0 )
         {
-            foreach($llaveprimaria as $obj)
+            foreach('.$nombreControlador.' as $objeto)
             {
                 '.$codigo_asignacion_guardado.'
                 $_counter++;
@@ -74,39 +98,45 @@ class '.$nombreControlador."Controller".' extends Controller
         }
         else
         {
-            $_'.$nombreTabla.' = \'\';
+            $_'.$nombreControlador.' = \'\';
         }
 
         
-        $values[\'tabla\'] = $_'.$nombreTabla.';
+        $values[\'tabla\'] = $_'.$nombreControlador.';
         $values[\'nuevo\'] = \'basico\';
 
-        return view(\'pages.menu.table\', $values);
+        return view(\'table\', $values);
+    }
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view(\'nuevo\');
     }
 
-    public function nuevo($menu_id = 0//llaves primarias)
+    public function store(Request $request)
     {
-        $values = array();
+        $Objeto'.$nombreControlador.' = new '.$nombreControlador.'Model();
+        '.$request_llaveprimaria.'
 
-        $values[\'menu_id\'] = \'\';//arreglo
-        
 
         if( $menu_id != 0)
         {
-            $catalogo_'.$nombreTabla.' = new '.$nombreTabla.'();
-            $'.$nombreTabla.' = $catalogo_'.$nombreTabla.'->buscar_'.$nombreTabla.'_id($menu_id//llave primaria);
+            $catalogo_'.$nombreControlador.' = new '.$nombreControlador.'();
+            $'.$nombreControlador.' = $catalogo_'.$nombreControlador.'->buscar_'.$nombreControlador.'_id($menu_id//llave primaria);
 
-            foreach($'.$nombreTabla.' as $objeto)
+            foreach($'.$nombreControlador.' as $objeto)
             {
                 $values[\'menu_id\'] = $obj->get_menu_id();//arreglo
             }
         }
 
 
-        $catalogo_'.$nombreTabla.' = new '.$nombreTabla.'();
-        $'.$nombreTabla.' = $catalogo_'.$nombreTabla.'->buscar_'.$nombreTabla.'_id();
+        $catalogo_'.$nombreControlador.' = new '.$nombreControlador.'();
+        $'.$nombreControlador.' = $catalogo_'.$nombreControlador.'->buscar_'.$nombreControlador.'_id();
 
-        $_'.$nombreTabla.' = array();
+        $_'.$nombreControlador.' = array();
 
         $_counter = 1;
         
@@ -142,9 +172,12 @@ class '.$nombreControlador."Controller".' extends Controller
 ?>');
         $Archivo = "Controladores/" . ucfirst($nombreControlador) . "Controller.php";
         $Escrito = file_put_contents($Archivo, $codigoControlador);
-        if ($Escrito !== false) {
+        if ($Escrito !== false)
+        {
             return $nombreControlador;
-        } else {
+        } 
+        else 
+        {
             throw new Exception("No se pudo generar el controlador: $nombreControlador");
         }
     }
@@ -152,13 +185,15 @@ class '.$nombreControlador."Controller".' extends Controller
     /*
         ->Funcion para obtener las columnas
     */
-    private function obtieneColumnas($nombreTabla){
+    private function obtieneColumnas($nombreTabla)
+    {
         $queryColumnas = "SELECT COLUMN_NAME AS nombre FROM information_schema.columns WHERE TABLE_NAME = '" . $nombreTabla . "'";
         $resultadoColumnas = $this->creaConsulta($queryColumnas);
         return $resultadoColumnas;
     }
 
-    private function obtieneLlavesPrimarias($nombreTabla){
+    private function obtieneLlavesPrimarias($nombreTabla)
+    {
         $queryLlaves = "SELECT COL_NAME(IC.OBJECT_ID,IC.COLUMN_ID) AS nombre
         FROM SYS.INDEXES  X 
         INNER JOIN SYS.INDEX_COLUMNS  IC 
@@ -172,23 +207,28 @@ class '.$nombreControlador."Controller".' extends Controller
     */
     private function creaConexion()
     {
-        switch ($_SESSION['tipodb']) {
+        switch ($_SESSION['tipodb'])
+        {
             case 'sqlserver':
                 $connectionInfo =  array("Database"=>$_SESSION['db'],"UID"=>$_SESSION['user'],"PWD"=>$_SESSION['password'],"ConnectionPooling"=>true);
-                if(sqlsrv_connect($_SESSION['server'],$connectionInfo)){
+                if(sqlsrv_connect($_SESSION['server'],$connectionInfo))
+                {
                     $conn= sqlsrv_connect($_SESSION['server'],$connectionInfo);
                 }
-                 else{
+                else
+                {
                     echo 'Error en las credenciales de sqlserver';
                     die();
                 }
                 return $conn;
 
             case 'mysql':
-                if(new PDO("mysql:host=".$_SESSION['server'].";dbname=".$_SESSION['db']."", $_SESSION['user'],$_SESSION['password'])){
+                if(new PDO("mysql:host=".$_SESSION['server'].";dbname=".$_SESSION['db']."", $_SESSION['user'],$_SESSION['password']))
+                {
                     $conn =new PDO("mysql:host=".$_SESSION['server'].";dbname=".$_SESSION['db']."", $_SESSION['user'],$_SESSION['password']);
                 }
-                else{
+                else
+                {
                     echo 'Error en las credenciales de mysql';
                     die();
                 }
@@ -203,7 +243,8 @@ class '.$nombreControlador."Controller".' extends Controller
     /*
         ->Funcion que regresa el arreglo de datos en base a la consulta dada
     */
-    private function creaConsulta($query){
+    private function creaConsulta($query)
+    {
         switch ($_SESSION['tipodb']) 
         {
             case 'sqlserver':
